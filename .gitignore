@@ -30,3 +30,25 @@ wheels/
 *.swo
 *~
 .DS_Store
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+social_media.db
+
+# Testing
+.coverage
+htmlcov/
+.tox/
+
+# IDE
+*.code-workspace
+.vscode/settings.json
+
+# Project specific
+instance/
+.pytest_cache/
+
+# OS
+Thumbs.db
