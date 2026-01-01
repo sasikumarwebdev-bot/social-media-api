@@ -8,18 +8,17 @@ from sqlalchemy import func
 router = APIRouter(tags=['Posts'])
 
 @router.get("/posts", response_model=List[schemas.PostWithVotes])
-def get_posts(db: Session = Depends(get_db), 
+def get_posts(db: Session = Depends(get_db),
               current_user: models.User = Depends(oauth2.get_current_user),
-              limit: int = Query(10, gt=0), 
+              limit: int = Query(10, gt=0),
               skip: int = 0,
               search: Optional[str] = ""):
-    
     posts = db.query(
-        models.Post, 
+        models.Post,
         func.count(models.Vote.post_id).label("votes")
     ).join(
-        models.Vote, 
-        models.Vote.post_id == models.Post.id, 
+        models.Vote,
+        models.Vote.post_id == models.Post.id,
         isouter=True
     ).group_by(models.Post.id).filter(
         models.Post.title.contains(search)
@@ -27,9 +26,9 @@ def get_posts(db: Session = Depends(get_db),
     
     return [{"Post": post, "votes": votes} for post, votes in posts]
 
-@router.post("/posts", status_code=status.HTTP_201_CREATED, 
+@router.post("/posts", status_code=status.HTTP_201_CREATED,
              response_model=schemas.PostResponse)
-def create_post(post: schemas.PostCreate, 
+def create_post(post: schemas.PostCreate,
                 db: Session = Depends(get_db),
                 current_user: models.User = Depends(oauth2.get_current_user)):
     new_post = models.Post(**post.dict(), owner_id=current_user.id)
@@ -41,13 +40,12 @@ def create_post(post: schemas.PostCreate,
 @router.get("/posts/{id}", response_model=schemas.PostWithVotes)
 def get_post(id: int, db: Session = Depends(get_db),
              current_user: models.User = Depends(oauth2.get_current_user)):
-    
     post = db.query(
-        models.Post, 
+        models.Post,
         func.count(models.Vote.post_id).label("votes")
     ).join(
-        models.Vote, 
-        models.Vote.post_id == models.Post.id, 
+        models.Vote,
+        models.Vote.post_id == models.Post.id,
         isouter=True
     ).group_by(models.Post.id).filter(models.Post.id == id).first()
     
@@ -56,12 +54,11 @@ def get_post(id: int, db: Session = Depends(get_db),
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Post with id {id} was not found")
     
-    return {"Post": post[0], "votes": post[1]}
+    return {"Post": post, "votes": post}
 
 @router.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db),
                 current_user: models.User = Depends(oauth2.get_current_user)):
-    
     post_query = db.query(models.Post).filter(models.Post.id == id)
     post = post_query.first()
     
@@ -77,13 +74,11 @@ def delete_post(id: int, db: Session = Depends(get_db),
     
     post_query.delete(synchronize_session=False)
     db.commit()
-    return
 
 @router.put("/posts/{id}", response_model=schemas.PostResponse)
-def update_post(id: int, updated_post: schemas.PostCreate, 
+def update_post(id: int, updated_post: schemas.PostCreate,
                 db: Session = Depends(get_db),
                 current_user: models.User = Depends(oauth2.get_current_user)):
-    
     post_query = db.query(models.Post).filter(models.Post.id == id)
     post = post_query.first()
     

@@ -7,9 +7,11 @@ from app.routers import posts, users, auth, votes
 # Create tables
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Social Media API", 
-              description="A complete social media API built with FastAPI",
-              version="1.0.0")
+app = FastAPI(
+    title="Social Media API",
+    description="A complete social media API built with FastAPI",
+    version="1.0.0"
+)
 
 # CORS middleware
 app.add_middleware(
